@@ -1,0 +1,86 @@
+
+
+Private Declare Function GetOpenFileName Lib "comdlg32.dll" Alias "GetOpenFileNameA" (pOpenfilename As OPENFILENAME) As Long
+Private Declare Function GetWindowLong Lib "user32" Alias "GetWindowLongA" (ByVal hwnd As Long, ByVal nIndex As Long) As Long
+Private Declare Function FindWindow Lib "user32" Alias "FindWindowA" (ByVal lpClassName As String, ByVal lpWindowName As String) As Long
+Private Type OPENFILENAME
+    lStructSize As Long     'OPENFILENAME结构的长度
+    hwndOwner As Long       'Owner窗口听句柄
+    hInstance As Long       '程序实例的句柄
+    lpstrFilter As String   '文件扩展名字串
+    lpstrCustomFilter As String
+    nMaxCustFilter As Long
+    nFilterIndex As Long
+    lpstrFile As String
+    nMaxFile As Long
+    lpstrFileTitle As String
+    nMaxFileTitle As Long
+    lpstrInitialDir As String
+    lpstrTitle As String
+    flags As Long
+    nFileOffset As Integer
+    nFileExtension As Integer
+    lpstrDefExt As String
+    lCustData As Long
+    lpfnHook As Long
+    lpTemplateName As String
+End Type
+Private Const GWL_HINSTANCE = (-6)
+Private Const OFN_ALLOWMULTISELECT = &H200
+Private Const OFN_EXPLORER = &H80000
+Private Const OFN_NONETWORKBUTTON = &H20000
+Private Const OFN_OVERWRITEPROMPT = &H2
+Private Declare Function GetSaveFileName Lib "comdlg32.dll" Alias "GetSaveFileNameA" (pOpenfilename As OPENFILENAME) As Long
+'使用fileDialog总是失去响应，只好换用这个API方法打开文件了
+Public Function GetIconFromFile() As StdPicture
+    Dim sOpen As String
+
+    Dim oFName As OPENFILENAME
+
+    oFName.hwndOwner = FindWindow(vbNullString, UserForm1.Caption)
+    oFName.hInstance = GetWindowLong(oFName.hwndOwner, GWL_HINSTANCE)
+    oFName.lStructSize = Len(oFName)
+    oFName.lpstrFilter = "图标文件 (*.ico;*.cur)" + Chr$(0) + "*.ico;*.cur" + Chr$(0)
+    If Len(FilterString) > 0 Then oFName.lpstrFilter = FilterString
+    oFName.lpstrFile = Space$(254)
+    oFName.nMaxFile = 255
+    oFName.lpstrFileTitle = Space$(254)
+    oFName.nMaxFileTitle = 255
+
+    oFName.lpstrTitle = "打开"
+    If Len(Title) > 0 Then oFName.lpstrTitle = Title
+    oFName.flags = OFN_EXPLORER Or OFN_NONETWORKBUTTON
+
+    If GetOpenFileName(oFName) Then
+        sOpen = oFName.lpstrFile
+        sOpen = Left(sOpen, InStr(sOpen, Chr(0)))
+        On Error Resume Next
+        Set GetIconFromFile = LoadPicture(sOpen)
+        
+    End If
+End Function
+
+Public Function GetSaveAsFileName() As String
+    Dim oFName As OPENFILENAME
+    oFName.lStructSize = Len(oFName)
+
+    oFName.hwndOwner = FindWindow(vbNullString, UserForm1.Caption)
+    oFName.hInstance = GetWindowLong(oFName.hwndOwner, GWL_HINSTANCE)
+
+    oFName.lpstrFilter = "位图文件(*.bmp)" + Chr$(0) + "*.bmp" + Chr$(0)
+    oFName.lpstrFile = Space$(254)
+    oFName.nMaxFile = 255
+    oFName.lpstrFileTitle = Space$(254)
+    oFName.nMaxFileTitle = 255
+    oFName.lpstrInitialDir = "C:\"
+    oFName.flags = OFN_OVERWRITEPROMPT
+
+    oFName.lpstrTitle = "保存图片"
+
+    If GetSaveFileName(oFName) Then
+        GetSaveAsFileName = Left(oFName.lpstrFile, InStr(oFName.lpstrFile, Chr(0)) - 1)
+    Else
+        GetSaveAsFileName = ""
+    End If
+End Function
+
