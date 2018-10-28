@@ -1,0 +1,552 @@
+'*******************************************************************************
+'*说明： 此类模块与工程内的Windows类模块是相关联的，使用时请一起导入
+'*       本模块由小Fisher（www.officefans.net）原创，您可以自由使用、复制、修改
+'*　　　 以下全部代码，在网上发表请注明原作者和出处，谢谢合作。
+'*******************************************************************************
+
+Option Explicit
+Option Base 1
+ 
+'==========窗口函数==========
+Private Declare Function IsWindow Lib "user32" (ByVal hwnd As Long) As Long
+Private Declare Function IsWindowEnabled Lib "user32" (ByVal hwnd As Long) As Long
+Private Declare Function IsWindowVisible Lib "user32" (ByVal hwnd As Long) As Long
+Private Declare Function ShowWindow Lib "user32" (ByVal hwnd As Long, ByVal nCmdShow As Long) As Long
+Private Const SW_SHOW = 5
+Private Const SW_HIDE = 0
+
+Private Declare Function EnableWindow Lib "user32" (ByVal hwnd As Long, ByVal fEnable As Long) As Long
+Private Declare Function FindWindow Lib "user32" Alias "FindWindowA" (ByVal lpClassName As String, ByVal lpWindowName As String) As Long
+Private Declare Function FindWindowEx Lib "user32" Alias "FindWindowExA" (ByVal hWnd1 As Long, ByVal hWnd2 As Long, ByVal lpsz1 As String, ByVal lpsz2 As String) As Long
+Private Declare Function GetParent Lib "user32" (ByVal hwnd As Long) As Long
+Private Declare Function GetTopWindow Lib "user32" (ByVal hwnd As Long) As Long
+Private Declare Function GetClassName Lib "user32" Alias "GetClassNameA" (ByVal hwnd As Long, ByVal lpClassName As String, ByVal nMaxCount As Long) As Long
+Private Declare Function GetWindowText Lib "user32" Alias "GetWindowTextA" (ByVal hwnd As Long, ByVal lpString As String, ByVal cch As Long) As Long
+Private Declare Function SetWindowText Lib "user32" Alias "SetWindowTextA" (ByVal hwnd As Long, ByVal lpString As String) As Long
+Private Declare Function GetWindowRect Lib "user32" (ByVal hwnd As Long, lpRect As RECT) As Long
+Private Declare Function GetClientRect Lib "user32" (ByVal hwnd As Long, lpRect As RECT) As Long
+
+Private Declare Function PrintWindow Lib "user32" (ByVal hwnd As Long, ByVal hdcBlt As Long, ByVal nFlags As Long) As Long
+Private Type RECT
+        Left As Long
+        Top As Long
+        Right As Long
+        Bottom As Long
+End Type
+
+Private Declare Function GetWindowLong Lib "user32" Alias "GetWindowLongA" (ByVal hwnd As Long, ByVal nIndex As Long) As Long
+Private Declare Function SetWindowLong Lib "user32" Alias "SetWindowLongA" (ByVal hwnd As Long, ByVal nIndex As Long, ByVal dwNewLong As Long) As Long
+Private Const GWL_STYLE = (-16)
+Private Const WS_CAPTION = &HC00000
+Private Const GWL_EXSTYLE = (-20)
+Private Const WS_EX_APPWINDOW = &H40000
+Private Const WS_EX_TOOLWINDOW = &H80
+Private Const WS_EX_TOPMOST = &H8&
+Private Declare Function DrawMenuBar Lib "user32" (ByVal hwnd As Long) As Long
+
+
+Private Declare Function GetWindowThreadProcessId Lib "user32" (ByVal hwnd As Long, lpdwProcessId As Long) As Long
+
+
+Private Declare Function SetWindowPos Lib "user32" (ByVal hwnd As Long, ByVal hWndInsertAfter As Long, ByVal X As Long, ByVal Y As Long, ByVal cX As Long, ByVal cy As Long, ByVal wFlags As Long) As Long
+Private Const HWND_TOPMOST = -1
+Private Const HWND_NOTOPMOST = -2
+Private Const HWND_TOP = 0
+
+Private Const SWP_NOMOVE = &H2
+Private Const SWP_NOSIZE = &H1
+Private Const SWP_NOZORDER = &H4
+Private Const SWP_SHOWWINDOW = &H40
+Private Const SWP_HIDEWINDOW = &H80
+Private Const SWP_NOACTIVATE = &H10
+
+Private Declare Function PostMessage Lib "user32" Alias "PostMessageA" (ByVal hwnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Private Declare Function SendMessage Lib "user32" Alias "SendMessageA" (ByVal hwnd As Long, ByVal wMsg As Long, ByVal wParam As Long, lParam As Any) As Long
+Private Const WM_GETTEXT = &HD
+Private Const EM_SETLIMITTEXT = &HC5&
+Private Const WM_CLOSE = &H10
+Private Const WM_SETTEXT = &HC
+Private Const WM_KEYDOWN = &H100
+Private Const WM_KEYUP = &H101
+Private Const VK_RETURN = &HD
+Private Const WM_SETICON = &H80
+Private Const WM_GETICON = &H7F
+
+Private Const ICON_SMALL = 0
+Private Const ICON_BIG = 1
+Private Const ICON_SMALL2 = 2
+
+
+'============图形函数===================
+
+Private Declare Function GetDC Lib "user32" (ByVal hwnd As Long) As Long
+Private Declare Function ReleaseDC Lib "user32" (ByVal hwnd As Long, ByVal hdc As Long) As Long
+Private Declare Function CreateCompatibleDC Lib "gdi32" (ByVal hdc As Long) As Long
+Private Declare Function CreateCompatibleBitmap Lib "gdi32" (ByVal hdc As Long, ByVal nWidth As Long, ByVal nHeight As Long) As Long
+Private Declare Function SelectObject Lib "gdi32" (ByVal hdc As Long, ByVal hObject As Long) As Long
+Private Declare Function DeleteObject Lib "gdi32" (ByVal hObject As Long) As Long
+Private Declare Function BitBlt Lib "gdi32" (ByVal hDestDC As Long, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hSrcDC As Long, ByVal xSrc As Long, ByVal ySrc As Long, ByVal dwRop As Long) As Long
+Private Const SRCCOPY = &HCC0020 ' (DWORD) dest = source
+Private Declare Function DeleteDC Lib "gdi32" (ByVal hdc As Long) As Long
+Private Declare Function Rectangle Lib "gdi32" (ByVal hdc As Long, ByVal X1 As Long, ByVal Y1 As Long, ByVal X2 As Long, ByVal Y2 As Long) As Long
+Private Declare Function CopyImage Lib "user32" (ByVal handle As Long, ByVal un1 As Long, ByVal n1 As Long, ByVal n2 As Long, ByVal un2 As Long) As Long
+Const IMAGE_BITMAP = 0
+Const IMAGE_ICON = 1
+Const LR_COPYRETURNORG = &H4
+
+
+Private Declare Function OleCreatePictureIndirect Lib "olepro32.dll" (PicDesc As PicBmp, RefIID As GUID, ByVal fPictureOwnsHandle As Long, IPic As IPicture) As Long
+Private Type GUID
+    Data1   As Long
+    Data2   As Integer
+    Data3   As Integer
+    Data4(7)   As Byte
+End Type
+Private Type PicBmp
+    Size   As Long
+    Type   As Long
+    hBmp   As Long
+    hPal   As Long
+    Reserved   As Long
+End Type
+
+
+Private Const vbPicTypeBitmap = 1
+Private Const vbPicTypeIcon = 3
+
+'======================自定义变量=====================
+Dim lHwnd As Long           '窗口句柄
+Dim lScreenLeft As Long     '屏幕坐标Left
+Dim lScreenTop As Long      '屏幕坐标Top
+Dim lLeft As Long           '父窗口的坐标Left
+Dim lTop As Long            '父窗口坐标Top
+Dim lLeftW As Long          '顶级窗口坐标Left
+Dim lTopW As Long           '顶级窗口坐标Top
+Dim lWidth As Long          '窗度宽度
+Dim lHeight As Long         '窗口高度
+Dim colWindows As windows   '子窗口集合
+Dim lStyle As Long          '窗口样式
+Dim lExStyle As Long        '窗口扩展样式
+
+Dim lProcessID As Long      '窗口进程ID
+Dim lThreadID As Long       '窗口线程ID
+Dim hIconBig As Long
+Dim hIconSmall As Long
+Dim hIconBigOrg As Long
+Dim hIconSmallOrg As Long
+
+
+'================================类属性=====================================
+'Hwnd属性（读写）：窗口句柄，其他所有属性都依赖这个属性
+Property Let hwnd(NewValue As Long)
+    lHwnd = NewValue
+    lThreadID = GetWindowThreadProcessId(lHwnd, lProcessID)
+    CalcRect
+End Property
+
+Property Get hwnd() As Long
+    hwnd = lHwnd
+End Property
+
+'PID属性（只读）：窗口的进程ID
+Property Get PID() As Long
+    PID = lProcessID
+End Property
+
+'ThreadID属性（只读）：窗口的线程ID
+Property Get ThreadID() As Long
+    ThreadID = lThreadID
+End Property
+
+'ScreenLeft属性（只读）：窗口距离屏幕左边的距离
+Property Get ScreenLeft() As Long
+    ScreenLeft = lScreenLeft
+End Property
+
+'ScreenTop属性（只读）：窗口距离屏幕上边的距离
+Property Get ScreenTop() As Long
+    ScreenTop = lScreenTop
+End Property
+
+'WindowLeft属性（只读）：窗口距离顶级窗口左边的距离
+Property Get WindowLeft() As Long
+    WindowLeft = lLeftW
+End Property
+
+'WindowTop属性（只读）：窗口距离顶级窗口上边的距离
+Property Get WindowTop() As Long
+    WindowTop = lTopW
+End Property
+
+'Left属性（读写）：窗口距父窗口左边的距离
+Property Get Left() As Long
+    Left = lLeft
+End Property
+
+Property Let Left(vNewValue As Long)
+    lLeft = vNewValue
+    ChangePos
+End Property
+
+
+'Top属性（读写）：窗口距父窗口上边的距离
+Property Get Top() As Long
+    Top = lTop
+End Property
+
+Property Let Top(vNewValue As Long)
+    lTop = vNewValue
+    ChangePos
+End Property
+
+'Width属性（读写）：窗口宽度
+Property Get Width() As Long
+    Width = lWidth
+End Property
+
+Property Let Width(vNewValue As Long)
+    lWidth = vNewValue
+    ChangePos
+End Property
+
+
+'Height属性（读写）：窗口高度
+Property Get Height() As Long
+    Height = lHeight
+End Property
+
+Property Let Height(vNewValue As Long)
+    lHeight = vNewValue
+    ChangePos
+End Property
+
+
+'Style属性（读写）：窗口样式
+Property Get Style() As Long
+    Style = GetWindowLong(lHwnd, GWL_STYLE)
+End Property
+
+Property Let Style(vNewValue As Long)
+
+    SetWindowLong lHwnd, GWL_STYLE, vNewValue
+    If Visible Then
+        DrawMenuBar lHwnd
+    End If
+End Property
+
+
+'Visible属性（读写）：窗口是否可见
+Property Get Visible() As Boolean
+    Visible = IsWindowVisible(lHwnd)
+End Property
+
+Property Let Visible(vNewValue As Boolean)
+    ShowWindow lHwnd, IIf(vNewValue, SW_SHOW, SW_HIDE)
+End Property
+
+'Enabled属性（读写）：窗口是否可用
+Property Get Enabled() As Boolean
+    Enabled = IsWindowEnabled(lHwnd)
+End Property
+
+Property Let Enabled(vNewValue As Boolean)
+    EnableWindow lHwnd, vNewValue
+End Property
+
+'TopMost属性（读写）：窗口是否显示在最前
+Property Get TopMost() As Boolean
+    lExStyle = GetWindowLong(lHwnd, GWL_EXSTYLE)
+    TopMost = lExStyle And WS_EX_TOPMOST
+End Property
+
+Property Let TopMost(vNewValue As Boolean)
+    SetWindowPos lHwnd, IIf(vNewValue, HWND_TOPMOST, HWND_NOTOPMOST), 0, 0, 0, 0, SWP_NOMOVE Or SWP_NOSIZE 'Or SWP_NOZORDER
+End Property
+
+'ShowInTaskBar属性（读写）：窗口是否显示在任务栏中，这个属性对很多窗口不起作用，但是对userform窗口很好用，因此被保留在代码中，使用的时候要注意
+Property Get ShowInTaskBar() As Boolean
+    lExStyle = GetWindowLong(lHwnd, GWL_EXSTYLE)
+    ShowInTaskBar = lExStyle And WS_EX_APPWINDOW
+End Property
+
+Property Let ShowInTaskBar(vNewValue As Boolean)
+
+    lExStyle = GetWindowLong(lHwnd, GWL_EXSTYLE)
+    If vNewValue Then
+        lExStyle = lExStyle Or WS_EX_APPWINDOW
+    Else
+        lExStyle = lExStyle And Not WS_EX_APPWINDOW
+    End If
+    
+    If Visible Then
+        SetWindowPos hwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE Or SWP_NOSIZE Or SWP_NOZORDER Or SWP_NOACTIVATE Or SWP_HIDEWINDOW
+        SetWindowLong lHwnd, GWL_EXSTYLE, lExStyle
+        SetWindowPos hwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE Or SWP_NOSIZE Or SWP_NOZORDER Or SWP_NOACTIVATE Or SWP_SHOWWINDOW
+    End If
+End Property
+
+'Caption属性（读写）：窗口标题
+Property Get Caption() As String
+    Dim sBuffer As String
+    sBuffer = Space(200)
+    GetWindowText lHwnd, sBuffer, Len(sBuffer)
+    Caption = Replace(Trim(sBuffer), Chr(0), "")
+End Property
+
+Property Let Caption(vNewValue As String)
+    SetWindowText lHwnd, vNewValue & Chr(0)
+End Property
+
+'Text属性（读写）：窗口文本
+Property Get Text() As String
+    Dim byt(1 To 20000) As Byte
+    SendMessage ByVal lHwnd, WM_GETTEXT, ByVal 20000, byt(1)
+    Text = StrConv(byt, vbUnicode)
+    Text = Replace(Trim(Text), Chr(0), "")
+ 
+End Property
+
+Property Let Text(vNewValue As String)
+    SendMessage lHwnd, WM_SETTEXT, 0&, ByVal vNewValue
+End Property
+
+'ClassName属性（只读）：窗口类的名称
+Property Get ClassName() As String
+    Dim sBuffer As String
+    sBuffer = Space(60)
+    GetClassName lHwnd, ByVal sBuffer, 60
+    ClassName = Replace(Trim(sBuffer), Chr(0), "")
+End Property
+
+
+'Children属性（只读）：窗口所包含的子窗口集合
+Property Get Children() As windows
+    Set colWindows = New windows
+    Dim hwndChild As Long
+    Dim oWin As window
+    
+    Do
+        hwndChild = FindWindowEx(hwnd, hwndChild, vbNullString, vbNullString)
+        If hwndChild <> 0 Then
+            Set oWin = New window
+            oWin.hwnd = hwndChild
+            colWindows.Add oWin
+        End If
+    Loop Until hwndChild = 0
+    Set Children = colWindows
+End Property
+
+'Parent属性（只读）：当前窗口的交窗口
+Property Get Parent() As window
+    Dim oParent As window
+    Set oParent = New window
+    oParent.hwnd = GetParent(lHwnd)
+    Set Parent = oParent
+End Property
+
+'Picture属性（只读）：当前窗口的图片，获取图片时窗口不必位于最前
+Public Property Get Picture() As StdPicture
+    Dim hdc As Long
+    Dim hDCMem As Long
+    Dim hBmp As Long
+    Dim hBmpPrev As Long
+ 
+
+    hdc = GetDC(0)
+    hDCMem = CreateCompatibleDC(hdc)
+    hBmp = CreateCompatibleBitmap(hdc, lWidth, lHeight)
+    hBmpPrev = SelectObject(hDCMem, hBmp)
+
+    If Me.Parent.hwnd = 0 Or (Style And WS_CAPTION) Then
+        PrintWindow lHwnd, hDCMem, 0
+       
+    Else
+        Dim hDCMemSrc As Long
+        Dim hBmpSrc As Long
+        Dim hBmpSrcPrev As Long
+        Dim oWin As window
+        hDCMemSrc = CreateCompatibleDC(hdc)
+        Set oWin = Me
+        Do While oWin.Parent.hwnd <> 0
+            If (oWin.Style And WS_CAPTION) Then Exit Do
+            Set oWin = oWin.Parent
+        Loop
+ 
+        hBmpSrc = CreateCompatibleBitmap(hdc, oWin.Width, oWin.Height)
+        hBmpSrcPrev = SelectObject(hDCMemSrc, hBmpSrc)
+        PrintWindow oWin.hwnd, hDCMemSrc, 0
+        
+        BitBlt hDCMem, 0, 0, lWidth, lHeight, hDCMemSrc, lLeftW, lTopW, SRCCOPY
+        SelectObject hDCMemSrc, hBmpSrcPrev
+        DeleteDC hDCMemSrc
+        DeleteObject hBmpSrc
+    End If
+    hBmp = SelectObject(hDCMem, hBmpPrev)
+    DeleteDC hDCMem
+ 
+    ReleaseDC 0, hdc
+ 
+
+    Set Picture = CreateBitmapPicture(hBmp, vbPicTypeBitmap)
+End Property
+ 
+'ScreenPicture属性（只读）：当前窗口矩形内的屏幕图片，如果窗口被其他窗口遮盖，得到图片中会显示其前面的窗口
+Public Property Get ScreenPicture() As StdPicture
+    Dim hdc As Long
+    Dim hDCMem As Long
+    Dim hBmp As Long
+    Dim hBmpPrev As Long
+
+    hdc = GetDC(0)
+    hDCMem = CreateCompatibleDC(hdc)
+    hBmp = CreateCompatibleBitmap(hdc, Width, Height)
+    hBmpPrev = SelectObject(hDCMem, hBmp)
+    BitBlt hDCMem, 0, 0, lWidth, lHeight, hdc, lScreenLeft, lScreenTop, SRCCOPY
+    ReleaseDC 0, hdc
+
+    hBmp = SelectObject(hDCMem, hBmpPrev)
+    DeleteDC hDCMem
+
+    Set ScreenPicture = CreateBitmapPicture(hBmp, vbPicTypeBitmap)
+End Property
+
+'BigIcon属性（读写）：与窗口关联的大图标（按下Alt + Tab键时显示在窗口列表中显示的图标）
+Public Property Get BigIcon() As StdPicture
+    Dim hIcon As Long
+    hIcon = SendMessage(lHwnd, WM_GETICON, ICON_BIG, 0&)
+    hIcon = CopyImage(hIcon, IMAGE_ICON, 0, 0, LR_COPYRETURNORG)
+    If hIcon <> 0 Then Set BigIcon = CreateBitmapPicture(hIcon, vbPicTypeIcon)
+End Property
+
+Public Property Let BigIcon(oPic As StdPicture)  '注意：由于不同程序对窗口的WM_SETICON消息处理方式不同，可能会出现意外结果，比如图标无法恢复
+    If oPic.Type = vbPicTypeIcon Then
+        If hIconBig <> 0 Then DeleteObject hIconBig
+        hIconBig = CopyImage(oPic.handle, IMAGE_ICON, 0, 0, LR_COPYRETURNORG)
+        If hIconBigOrg = 0 Then
+            hIconBigOrg = SendMessage(lHwnd, WM_SETICON, ICON_BIG, ByVal hIconBig)
+        Else
+            SendMessage lHwnd, WM_SETICON, ICON_BIG, ByVal hIconBig
+        End If
+    End If
+End Property
+
+'SmallIcon属性（读写）：与窗口关联的大图标（在任务栏和窗口标题栏中显示的图标）
+Public Property Get SmallIcon() As StdPicture
+    Dim hIcon As Long
+    hIcon = SendMessage(lHwnd, WM_GETICON, ICON_BIG, 0&)
+    hIcon = CopyImage(hIcon, IMAGE_ICON, 0, 0, LR_COPYRETURNORG)
+    If hIcon <> 0 Then Set SmallIcon = CreateBitmapPicture(hIcon, vbPicTypeIcon)
+End Property
+
+Public Property Let SmallIcon(oPic As StdPicture)
+    If oPic.Type = vbPicTypeIcon Then
+        If hIconSmall <> 0 Then DeleteObject hIconSmall
+        hIconSmall = CopyImage(oPic.handle, IMAGE_ICON, 0, 0, LR_COPYRETURNORG)
+        If hIconSmallOrg = 0 Then
+            hIconSmallOrg = SendMessage(lHwnd, WM_SETICON, ICON_BIG, ByVal hIconSmall)
+        Else
+            SendMessage lHwnd, WM_SETICON, ICON_BIG, ByVal hIconSmall
+        End If
+    End If
+End Property
+
+
+
+'===================私有函数和过程=============================
+Private Function CreateBitmapPicture(ByVal hBmp As Long, PicType As Long) As StdPicture
+
+    Dim pic     As PicBmp
+    Dim IID_IDispatch     As GUID
+    
+    With IID_IDispatch
+        .Data1 = &H20400
+        .Data4(0) = &HC0
+        .Data4(7) = &H46
+    End With
+    
+    With pic
+        .Size = Len(pic)
+        .Type = PicType
+        .hBmp = hBmp
+        .hPal = 0
+    End With
+    OleCreatePictureIndirect pic, IID_IDispatch, 1, CreateBitmapPicture
+End Function
+
+Private Sub CalcRect()
+    Dim oRect As RECT
+    Dim oClientRect As RECT
+    Dim lBorderWidth As Long
+    Dim lCaptionHeight As Long
+    
+    GetWindowRect lHwnd, oRect
+    '获取窗口相对于屏幕左上角的位置信息
+    With oRect
+        lScreenLeft = .Left
+        lScreenTop = .Top
+        lWidth = .Right - .Left
+        lHeight = .Bottom - .Top
+    End With
+
+    '获取窗口相对于父窗口客户区左上角的位置
+    If GetParent(lHwnd) = 0 Or (Style And WS_CAPTION) Then
+        lLeft = lScreenLeft
+        lTop = lScreenTop
+    Else
+        GetWindowRect GetParent(lHwnd), oRect
+        GetClientRect GetParent(lHwnd), oClientRect
+        lBorderWidth = (oRect.Right - oRect.Left - oClientRect.Right) / 2
+        lCaptionHeight = oRect.Bottom - oRect.Top - oClientRect.Bottom - lBorderWidth * 2
+        lLeft = lScreenLeft - oRect.Left - lBorderWidth
+        lTop = lScreenTop - oRect.Top - lBorderWidth - lCaptionHeight
+
+    End If
+    
+    '获取窗口相对于顶级窗口客户区左上角的位置
+    Dim hwndTop As Long
+    hwndTop = lHwnd
+    lStyle = GetWindowLong(hwndTop, GWL_STYLE)
+    Do While GetParent(hwndTop) <> 0
+        If (lStyle And WS_CAPTION) Then Exit Do
+        hwndTop = GetParent(hwndTop)
+        lStyle = GetWindowLong(hwndTop, GWL_STYLE)
+    Loop
+
+    GetWindowRect hwndTop, oRect
+    lLeftW = lScreenLeft - oRect.Left
+    lTopW = lScreenTop - oRect.Top
+End Sub
+
+Private Sub ChangePos()
+    Dim bVisible As Boolean
+    bVisible = Visible
+
+    If bVisible Then
+        SetWindowPos hwnd, HWND_TOP, lLeft, lTop, lWidth, lHeight, SWP_NOZORDER Or SWP_NOACTIVATE Or SWP_SHOWWINDOW
+    Else
+        SetWindowPos hwnd, HWND_TOP, lLeft, lTop, lWidth, lHeight, SWP_NOZORDER Or SWP_NOACTIVATE Or SWP_HIDEWINDOW
+    End If
+End Sub
+
+Private Sub Class_Initialize()
+    Set colWindows = New windows
+End Sub
+
+Private Sub Class_Terminate()
+    Dim oWin As window
+    For Each oWin In colWindows
+        Set oWin = Nothing
+    Next
+    Set colWindows = Nothing
+    '删除创建的hIcon对象，恢复窗口原来图标
+    If hIconBig <> 0 Then DeleteObject hIconBig
+    If hIconSmall <> 0 Then DeleteObject hIconSmall
+    If hIconBigOrg Or hIconSmallOrg Then
+        SendMessage lHwnd, WM_SETICON, ICON_BIG, ByVal hIconBigOrg
+        SendMessage lHwnd, WM_SETICON, ICON_SMALL, ByVal hIconSmallOrg
+        If Visible Then
+            SetWindowPos hwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE Or SWP_NOSIZE Or SWP_NOZORDER Or SWP_NOACTIVATE Or SWP_HIDEWINDOW
+            SetWindowPos hwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE Or SWP_NOSIZE Or SWP_NOZORDER Or SWP_NOACTIVATE Or SWP_SHOWWINDOW
+        End If
+    End If
+End Sub
