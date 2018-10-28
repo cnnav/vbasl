@@ -1,0 +1,65 @@
+'一个非常简单实用而且通用的XTimer类，只需在任何一个标准模块中加入下列代码即可使用：
+'Public Sub TimerProc(ByVal hwnd As Long, ByVal uMsg As Long, ByVal oTimer As xTimer, ByVal dwTime As Long)
+'   oTimer.tick
+'End Sub
+
+Private Declare Function SetTimer Lib "user32" (ByVal hwnd As Long, ByVal nIDEvent As Long, ByVal uElapse As Long, ByVal lpTimerFunc As Long) As Long
+Private Declare Function KillTimer Lib "user32" (ByVal hwnd As Long, ByVal nIDEvent As Long) As Long
+Private Declare Function FindWindow Lib "user32" Alias "FindWindowA" (ByVal lpClassName As String, ByVal lpWindowName As String) As Long
+
+Dim lInterval As Long
+Dim bEnabled As Boolean
+Dim lTimerID As Long
+Dim lHwnd As Long
+
+
+Public Event Timer()
+
+Property Let Interval(vNewValue As Long)  '允许用户设置计时器的时间间隔
+    If vNewValue > 0 Then
+        lInterval = vNewValue
+        Me.Enabled = bEnabled
+    End If
+End Property
+
+Property Get Interval() As Long         '读取计时器的时间间隔
+    Interval = lInterval
+End Property
+
+Property Let Enabled(vNewValue As Boolean)  '设置是否可用
+    
+    If bEnabled Then
+        KillTimer lHwnd, lTimerID
+        lTimerID = 0
+    End If
+    bEnabled = vNewValue
+    If lInterval > 0 Then
+        If bEnabled Then
+            lTimerID = SetTimer(lHwnd, ObjPtr(Me), lInterval, AddressOf TimerProc)
+        End If
+    End If
+End Property
+
+Property Get Enabled() As Boolean   '获取是否可用
+    Enabled = bEnabled
+End Property
+
+Public Sub tick()                   '到时间后产生Timer事件
+    RaiseEvent Timer
+End Sub
+
+
+Private Sub Class_Initialize()
+    If Application.Version > 9 Then
+        lHwnd = Application.hwnd
+    Else
+        lHwnd = FindWindow("XLMAIN", Application.Caption)
+    End If
+End Sub
+
+Private Sub Class_Terminate()
+    If bEnabled Then
+        KillTimer lHwnd, lTimerID
+        lTimerID = 0
+    End If
+End Sub
