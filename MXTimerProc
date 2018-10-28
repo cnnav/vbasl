@@ -1,0 +1,7 @@
+'xTimer类的支持模块，与通常的Timer控件最大的区别在于回调函数的第三个参数直接设置为了调用此函数的xTimer对象本身
+'这样就可以使用xTimer代码中的过程或函数来产生事件
+Option Explicit
+
+Public Sub TimerProc(ByVal hwnd As Long, ByVal uMsg As Long, ByVal oTimer As xTimer, ByVal dwTime As Long)
+   oTimer.tick
+End Sub
